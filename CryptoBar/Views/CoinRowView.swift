@@ -9,9 +9,10 @@ struct CoinRowView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(quote.coin.name)
                     .font(.headline)
+                    .foregroundStyle(CryptoBarColors.primaryText)
                 Text(quote.coin.displaySymbol)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(CryptoBarColors.secondaryText)
             }
 
             Spacer()
@@ -19,6 +20,7 @@ struct CoinRowView: View {
             VStack(alignment: .trailing, spacing: 2) {
                 Text(PriceFormatter.format(quote.price, currencyCode: currencyCode))
                     .font(.headline.monospacedDigit())
+                    .foregroundStyle(CryptoBarColors.primaryText)
 
                 if let change = quote.formattedChange24h {
                     Text(change)
@@ -35,11 +37,11 @@ struct CoinRowSkeleton: View {
     var body: some View {
         HStack {
             RoundedRectangle(cornerRadius: 4)
-                .fill(Color.secondary.opacity(0.2))
+                .fill(CryptoBarColors.secondaryText.opacity(0.25))
                 .frame(width: 100, height: 14)
             Spacer()
             RoundedRectangle(cornerRadius: 4)
-                .fill(Color.secondary.opacity(0.2))
+                .fill(CryptoBarColors.secondaryText.opacity(0.25))
                 .frame(width: 72, height: 14)
         }
         .padding(.vertical, 8)

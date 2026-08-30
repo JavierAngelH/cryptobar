@@ -7,6 +7,7 @@ final class MenuBarController: NSObject {
 
     private var statusItem: NSStatusItem!
     private var popover: NSPopover!
+    private var settingsWindow: NSWindow?
     private let viewModel = PriceViewModel()
     private var statusUpdateTask: Task<Void, Never>?
 
@@ -24,7 +25,9 @@ final class MenuBarController: NSObject {
         popover.contentSize = NSSize(width: 320, height: 380)
         popover.behavior = .transient
         popover.contentViewController = NSHostingController(
-            rootView: PopoverView(viewModel: viewModel)
+            rootView: PopoverView(viewModel: viewModel, onOpenSettings: { [weak self] in
+                self?.showSettingsWindow()
+            })
         )
 
         if let button = statusItem.button {
@@ -44,7 +47,34 @@ final class MenuBarController: NSObject {
 
     func deactivate() {
         statusUpdateTask?.cancel()
+        settingsWindow?.close()
+        settingsWindow = nil
         viewModel.stop()
+    }
+
+    func showSettingsWindow() {
+        if let settingsWindow, settingsWindow.isVisible {
+            settingsWindow.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
+
+        let hostingController = NSHostingController(
+            rootView: SettingsView(viewModel: viewModel) { [weak self] in
+                self?.settingsWindow?.close()
+            }
+        )
+
+        let window = NSWindow(contentViewController: hostingController)
+        window.title = "CryptoBar Settings"
+        window.styleMask = [.titled, .closable, .miniaturizable]
+        window.setContentSize(NSSize(width: 440, height: 560))
+        window.center()
+        window.isReleasedWhenClosed = false
+        window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+
+        settingsWindow = window
     }
 
     @objc func togglePopover(_ sender: AnyObject?) {

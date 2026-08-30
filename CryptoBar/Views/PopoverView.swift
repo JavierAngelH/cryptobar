@@ -2,7 +2,7 @@ import SwiftUI
 
 struct PopoverView: View {
     @Bindable var viewModel: PriceViewModel
-    @State private var showSettings = false
+    var onOpenSettings: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -13,20 +13,20 @@ struct PopoverView: View {
             footer
         }
         .frame(width: 320)
-        .sheet(isPresented: $showSettings) {
-            SettingsView(viewModel: viewModel)
-        }
+        .cryptoBarPanelStyle()
     }
 
     private var header: some View {
         HStack {
             Label("CryptoBar", systemImage: "bitcoinsign.circle.fill")
                 .font(.headline)
+                .foregroundStyle(CryptoBarColors.primaryText)
             Spacer()
             Button {
-                showSettings = true
+                onOpenSettings()
             } label: {
                 Image(systemName: "gearshape")
+                    .foregroundStyle(CryptoBarColors.primaryText)
             }
             .buttonStyle(.plain)
             .help("Settings")
@@ -49,7 +49,7 @@ struct PopoverView: View {
             VStack(spacing: 12) {
                 Text(error)
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(CryptoBarColors.secondaryText)
                     .multilineTextAlignment(.center)
                 Button("Retry") {
                     viewModel.fetchPrices()
@@ -61,9 +61,9 @@ struct PopoverView: View {
         } else if viewModel.quotes.isEmpty {
             VStack(spacing: 12) {
                 Text("No coins selected.")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(CryptoBarColors.secondaryText)
                 Button("Open Settings") {
-                    showSettings = true
+                    onOpenSettings()
                 }
                 .controlSize(.small)
             }
@@ -92,11 +92,11 @@ struct PopoverView: View {
             if let lastFetch = viewModel.lastFetchDate {
                 Text("Updated \(lastFetch.formatted(date: .omitted, time: .shortened))")
                     .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(CryptoBarColors.secondaryText)
             } else {
                 Text("Waiting for first update…")
                     .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(CryptoBarColors.secondaryText)
             }
 
             Spacer()
@@ -109,6 +109,7 @@ struct PopoverView: View {
                     viewModel.refreshIfStale(force: true)
                 } label: {
                     Image(systemName: "arrow.clockwise")
+                        .foregroundStyle(CryptoBarColors.primaryText)
                 }
                 .buttonStyle(.plain)
                 .help("Refresh now")
