@@ -24,7 +24,7 @@ A lightweight macOS menu bar app that shows live cryptocurrency prices from [Coi
 
 ```bash
 # Clone from GitHub (after creating the repo — see below)
-git clone https://github.com/javier-angel/cryptobar.git
+git clone https://github.com/JavierAngelH/cryptobar.git
 cd cryptobar
 
 # Or clone from Cursor Origin while setting up GitHub:
