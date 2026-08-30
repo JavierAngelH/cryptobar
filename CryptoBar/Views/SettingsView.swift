@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @ObservedObject var viewModel: PriceViewModel
+    @Bindable var viewModel: PriceViewModel
     @Environment(\.dismiss) private var dismiss
 
     @State private var searchText = ""
@@ -86,7 +86,7 @@ struct SettingsView: View {
                     }
                     .labelsHidden()
                     .frame(maxWidth: .infinity)
-                    .onChange(of: viewModel.vsCurrency) { _ in
+                    .onChange(of: viewModel.vsCurrency) { _, _ in
                         viewModel.fetchPrices()
                     }
                 }

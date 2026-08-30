@@ -2,8 +2,8 @@
 
 A lightweight macOS menu bar app that shows live cryptocurrency prices from [CoinGecko](https://www.coingecko.com/). Click the icon to open a panel with your favorites, 24h change, and settings.
 
-![macOS 13+](https://img.shields.io/badge/macOS-13%2B-blue)
-![Swift 5.9](https://img.shields.io/badge/Swift-5.9-orange)
+![macOS 15+](https://img.shields.io/badge/macOS-15%2B-blue)
+![Swift 6](https://img.shields.io/badge/Swift-6-orange)
 
 ## Features
 
@@ -16,8 +16,8 @@ A lightweight macOS menu bar app that shows live cryptocurrency prices from [Coi
 
 ## Requirements
 
-- macOS 13 (Ventura) or later
-- Xcode 15 or later
+- macOS 15 (Sequoia) or later — built and tested for macOS Tahoe
+- Xcode 16 or later
 - [XcodeGen](https://github.com/yonaskolb/XcodeGen) (`brew install xcodegen`)
 
 ## Build and run

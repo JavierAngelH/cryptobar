@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct PopoverView: View {
-    @ObservedObject var viewModel: PriceViewModel
+    @Bindable var viewModel: PriceViewModel
     @State private var showSettings = false
 
     var body: some View {

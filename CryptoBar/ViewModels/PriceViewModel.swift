@@ -1,33 +1,34 @@
-import Combine
 import Foundation
+import Observation
 
 @MainActor
-final class PriceViewModel: ObservableObject {
-    @Published var quotes: [PriceQuote] = []
-    @Published var isLoading = false
-    @Published var errorMessage: String?
-    @Published var isRateLimited = false
+@Observable
+final class PriceViewModel {
+    var quotes: [PriceQuote] = []
+    var isLoading = false
+    var errorMessage: String?
+    var isRateLimited = false
 
-    @Published var selectedCoinIDs: [String] {
+    var selectedCoinIDs: [String] {
         didSet { persist() }
     }
 
-    @Published var vsCurrency: String {
+    var vsCurrency: String {
         didSet { persist() }
     }
 
-    @Published var refreshInterval: TimeInterval {
+    var refreshInterval: TimeInterval {
         didSet {
             persist()
             restartPolling()
         }
     }
 
-    @Published var apiKey: String {
+    var apiKey: String {
         didSet { persist() }
     }
 
-    @Published var launchAtLogin: Bool {
+    var launchAtLogin: Bool {
         didSet {
             UserDefaults.standard.set(launchAtLogin, forKey: Keys.launchAtLogin)
             if let error = LaunchAtLoginManager.setEnabled(launchAtLogin) {
@@ -39,9 +40,9 @@ final class PriceViewModel: ObservableObject {
         }
     }
 
-    @Published var launchAtLoginError: String?
+    var launchAtLoginError: String?
 
-    @Published var lastFetchDate: Date?
+    var lastFetchDate: Date?
     var catalog: [Coin] { CoinCatalog.shared.coins }
 
     private let service = CoinGeckoService()
@@ -134,7 +135,7 @@ final class PriceViewModel: ObservableObject {
         pollingTask = Task {
             while !Task.isCancelled {
                 let interval = max(refreshInterval, 30)
-                try? await Task.sleep(nanoseconds: UInt64(interval * 1_000_000_000))
+                try? await Task.sleep(for: .seconds(interval))
                 guard !Task.isCancelled else { return }
                 fetchPrices()
             }
@@ -153,7 +154,7 @@ final class PriceViewModel: ObservableObject {
         if backoffSeconds > 0 {
             isRateLimited = true
             errorMessage = "Rate limited — retrying in \(Int(backoffSeconds))s…"
-            try? await Task.sleep(nanoseconds: UInt64(backoffSeconds * 1_000_000_000))
+            try? await Task.sleep(for: .seconds(backoffSeconds))
             guard !Task.isCancelled else { return }
         }
 
@@ -190,7 +191,7 @@ final class PriceViewModel: ObservableObject {
     private func scheduleRetry(after seconds: TimeInterval) {
         fetchTask?.cancel()
         fetchTask = Task {
-            try? await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
+            try? await Task.sleep(for: .seconds(seconds))
             guard !Task.isCancelled else { return }
             await performFetch()
         }

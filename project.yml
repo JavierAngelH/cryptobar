@@ -2,14 +2,14 @@ name: CryptoBar
 options:
   bundleIdPrefix: com.cryptobar
   deploymentTarget:
-    macOS: "13.0"
+    macOS: "15.0"
   createIntermediateGroups: true
-  xcodeVersion: "15.0"
+  xcodeVersion: "16.0"
 
 settings:
   base:
-    SWIFT_VERSION: "5.9"
-    MACOSX_DEPLOYMENT_TARGET: "13.0"
+    SWIFT_VERSION: "6.0"
+    MACOSX_DEPLOYMENT_TARGET: "15.0"
 
 targets:
   CryptoBar:
@@ -29,6 +29,6 @@ targets:
         ENABLE_HARDENED_RUNTIME: true
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         CURRENT_PROJECT_VERSION: 1
-        MARKETING_VERSION: 1.0
+        MARKETING_VERSION: "1.0"
     entitlements:
       path: CryptoBar/CryptoBar.entitlements
