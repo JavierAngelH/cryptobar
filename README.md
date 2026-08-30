@@ -61,30 +61,6 @@ Enable **Launch at Login** in Settings and it will start when you reboot.
 
 In Xcode: **Product → Build** (⌘B), then **Product → Show Build Folder in Finder**, find `Release/CryptoBar.app`, and drag it to **Applications**.
 
-### Sharing with friends (free, no $99 Apple fee)
-
-1. **Share the GitHub repo** — they clone and run `./scripts/build-release.sh` on their Mac (they need free Xcode).
-2. **Share the `.app`** — zip `build/CryptoBar.app` and send it. On first open, macOS may block unknown apps. They right-click → **Open**, or run:
-   ```bash
-   xattr -cr /path/to/CryptoBar.app
-   ```
-   No Apple Developer account required for personal use on your own Mac.
-
-> **Note:** Without a paid Apple Developer account ($99/yr), the app is not notarized. That's fine for you and tech-savvy friends; strangers may see a Gatekeeper warning on first launch.
-
-## Create the GitHub repository
-
-This project is pushed to your Cursor Origin remote. To publish on GitHub:
-
-```bash
-gh auth login          # one-time, if not already signed in
-./scripts/create-github-repo.sh
-```
-
-That creates `https://github.com/<your-username>/cryptobar` and pushes `main`.
-
-Alternatively, use the **Create repo** pill in the Cursor agent view to mirror this project to GitHub.
-
 ### First launch
 
 1. Click the menu bar icon to open the price panel.
