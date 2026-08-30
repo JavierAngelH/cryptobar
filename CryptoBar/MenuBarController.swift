@@ -63,8 +63,11 @@ final class MenuBarController: NSObject {
         guard let button = statusItem.button else { return }
 
         let config = NSImage.SymbolConfiguration(pointSize: 14, weight: .medium)
-        button.image = NSImage(systemSymbolName: "bitcoinsign.circle.fill", accessibilityDescription: "CryptoBar")?
-            .withSymbolConfiguration(config)
+        if let image = NSImage(systemSymbolName: "bitcoinsign.circle.fill", accessibilityDescription: "CryptoBar")?
+            .withSymbolConfiguration(config) {
+            image.isTemplate = true
+            button.image = image
+        }
 
         if viewModel.quotes.isEmpty {
             button.title = ""

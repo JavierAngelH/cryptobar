@@ -170,10 +170,14 @@ final class PriceViewModel {
                 catalog: catalog
             )
             guard !Task.isCancelled else { return }
-            quotes = fetched
-            lastFetchDate = Date()
-            backoffSeconds = 0
-            errorMessage = nil
+            if fetched.isEmpty {
+                errorMessage = "Could not parse prices from CoinGecko."
+            } else {
+                quotes = fetched
+                lastFetchDate = Date()
+                backoffSeconds = 0
+                errorMessage = nil
+            }
         } catch CoinGeckoError.rateLimited(let retryAfter) {
             guard !Task.isCancelled else { return }
             backoffSeconds = retryAfter ?? min(max(backoffSeconds * 2, 15), 120)

@@ -82,10 +82,10 @@ struct CoinGeckoService: Sendable {
 
         return coinIDs.compactMap { coinID in
             guard let entry = json[coinID] else { return nil }
-            guard let price = entry[currency] as? Double else { return nil }
+            guard let price = Self.parseNumber(entry[currency]) else { return nil }
 
             let changeKey = "\(currency)_24h_change"
-            let change = entry[changeKey] as? Double
+            let change = Self.parseNumber(entry[changeKey])
             let updatedAt: Date
             if let timestamp = entry["last_updated_at"] as? TimeInterval {
                 updatedAt = Date(timeIntervalSince1970: timestamp)
@@ -131,5 +131,18 @@ struct CoinGeckoService: Sendable {
 
         let remote = try JSONDecoder().decode([RemoteCoin].self, from: data)
         return remote.map { Coin(id: $0.id, symbol: $0.symbol, name: $0.name) }
+    }
+
+    private static func parseNumber(_ value: Any?) -> Double? {
+        switch value {
+        case let number as Double:
+            return number
+        case let number as Int:
+            return Double(number)
+        case let number as NSNumber:
+            return number.doubleValue
+        default:
+            return nil
+        }
     }
 }

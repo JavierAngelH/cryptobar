@@ -2,13 +2,13 @@ import AppKit
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
-        Task { @MainActor in
+        MainActor.assumeIsolated {
             MenuBarController.shared.activate()
         }
     }
 
     func applicationWillTerminate(_ notification: Notification) {
-        Task { @MainActor in
+        MainActor.assumeIsolated {
             MenuBarController.shared.deactivate()
         }
     }
