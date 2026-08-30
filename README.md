@@ -23,13 +23,31 @@ A lightweight macOS menu bar app that shows live cryptocurrency prices from [Coi
 ## Build and run
 
 ```bash
+# Clone from GitHub (after creating the repo — see below)
 git clone https://github.com/javier-angel/cryptobar.git
 cd cryptobar
+
+# Or clone from Cursor Origin while setting up GitHub:
+# git clone https://origin.cursor.com/git/javier-angel/tmp-5c8030b4266b693d.git cryptobar && cd cryptobar
+
 xcodegen generate
 open CryptoBar.xcodeproj
 ```
 
 In Xcode, select **My Mac** as the run destination and press **⌘R**. The bitcoin icon appears in your menu bar.
+
+## Create the GitHub repository
+
+This project is pushed to your Cursor Origin remote. To publish on GitHub:
+
+```bash
+gh auth login          # one-time, if not already signed in
+./scripts/create-github-repo.sh
+```
+
+That creates `https://github.com/<your-username>/cryptobar` and pushes `main`.
+
+Alternatively, use the **Create repo** pill in the Cursor agent view to mirror this project to GitHub.
 
 ### First launch
 
