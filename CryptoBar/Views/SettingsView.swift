@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @Bindable var viewModel: PriceViewModel
+    @ObservedObject var viewModel: PriceViewModel
     @Environment(\.dismiss) private var dismiss
 
     @State private var searchText = ""
