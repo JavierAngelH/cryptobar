@@ -36,6 +36,42 @@ open CryptoBar.xcodeproj
 
 In Xcode, select **My Mac** as the run destination and press **⌘R**. The bitcoin icon appears in your menu bar.
 
+## Install as a real app (no Xcode needed day-to-day)
+
+You only need Xcode **once** to build the app. After that, run it like any other Mac app from **Applications** — no Xcode open, no ⌘R.
+
+### One-time build
+
+```bash
+cd cryptobar
+chmod +x scripts/build-release.sh scripts/install-local.sh
+./scripts/build-release.sh
+./scripts/install-local.sh
+```
+
+That puts **CryptoBar.app** in `/Applications`. Launch it from Spotlight, Launchpad, or:
+
+```bash
+open /Applications/CryptoBar.app
+```
+
+Enable **Launch at Login** in Settings and it will start when you reboot.
+
+### Without the install script
+
+In Xcode: **Product → Build** (⌘B), then **Product → Show Build Folder in Finder**, find `Release/CryptoBar.app`, and drag it to **Applications**.
+
+### Sharing with friends (free, no $99 Apple fee)
+
+1. **Share the GitHub repo** — they clone and run `./scripts/build-release.sh` on their Mac (they need free Xcode).
+2. **Share the `.app`** — zip `build/CryptoBar.app` and send it. On first open, macOS may block unknown apps. They right-click → **Open**, or run:
+   ```bash
+   xattr -cr /path/to/CryptoBar.app
+   ```
+   No Apple Developer account required for personal use on your own Mac.
+
+> **Note:** Without a paid Apple Developer account ($99/yr), the app is not notarized. That's fine for you and tech-savvy friends; strangers may see a Gatekeeper warning on first launch.
+
 ## Create the GitHub repository
 
 This project is pushed to your Cursor Origin remote. To publish on GitHub:
