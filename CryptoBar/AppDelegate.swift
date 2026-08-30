@@ -1,10 +1,12 @@
 import AppKit
 import SwiftUI
 
+@MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
     private var popover: NSPopover!
     private let viewModel = PriceViewModel()
+    private var statusUpdateTask: Task<Void, Never>?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
@@ -26,18 +28,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         viewModel.start()
 
-        Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { [weak self] _ in
-            Task { @MainActor in
-                self?.updateStatusItem()
+        statusUpdateTask = Task {
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(5))
+                updateStatusItem()
             }
         }
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        statusUpdateTask?.cancel()
         viewModel.stop()
     }
 
-    @objc private func togglePopover(_ sender: AnyObject?) {
+    nonisolated @objc private func togglePopover(_ sender: AnyObject?) {
+        MainActor.assumeIsolated {
+            togglePopoverOnMainActor(sender)
+        }
+    }
+
+    private func togglePopoverOnMainActor(_ sender: AnyObject?) {
         guard let button = statusItem.button else { return }
 
         if popover.isShown {
@@ -49,7 +59,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    @MainActor
     private func updateStatusItem() {
         guard let button = statusItem.button else { return }
 
