@@ -12,6 +12,12 @@ struct SettingsView: View {
         ("60 seconds", 60),
         ("2 minutes", 120)
     ]
+    private let rotationOptions: [(label: String, seconds: TimeInterval)] = [
+        ("Every 5 seconds", 5),
+        ("Every 10 seconds", 10),
+        ("Every 15 seconds", 15),
+        ("First coin only", 0)
+    ]
 
     private var displayedCoins: [Coin] {
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
@@ -83,6 +89,32 @@ struct SettingsView: View {
                 }
 
                 HStack {
+                    GroupBox("Price refresh") {
+                        Picker("Price refresh", selection: $viewModel.refreshInterval) {
+                            ForEach(refreshOptions, id: \.seconds) { option in
+                                Text(option.label).tag(option.seconds)
+                            }
+                        }
+                        .labelsHidden()
+                        .frame(maxWidth: .infinity)
+                    }
+
+                    GroupBox("Menu bar rotation") {
+                        Picker("Menu bar rotation", selection: $viewModel.menuBarRotationInterval) {
+                            ForEach(rotationOptions, id: \.seconds) { option in
+                                Text(option.label).tag(option.seconds)
+                            }
+                        }
+                        .labelsHidden()
+                        .frame(maxWidth: .infinity)
+                    }
+                }
+
+                Text("Prices auto-refresh on the interval above. The menu bar cycles through your tracked coins on the rotation interval.")
+                    .font(.caption)
+                    .foregroundStyle(CryptoBarColors.secondaryText)
+
+                HStack {
                     GroupBox("Currency") {
                         Picker("Currency", selection: $viewModel.vsCurrency) {
                             ForEach(currencies, id: \.self) { code in
@@ -94,16 +126,6 @@ struct SettingsView: View {
                         .onChange(of: viewModel.vsCurrency) { _, _ in
                             viewModel.fetchPrices()
                         }
-                    }
-
-                    GroupBox("Refresh") {
-                        Picker("Refresh", selection: $viewModel.refreshInterval) {
-                            ForEach(refreshOptions, id: \.seconds) { option in
-                                Text(option.label).tag(option.seconds)
-                            }
-                        }
-                        .labelsHidden()
-                        .frame(maxWidth: .infinity)
                     }
                 }
 

@@ -9,7 +9,7 @@ final class MenuBarController: NSObject {
     private var popover: NSPopover!
     private var settingsWindow: NSWindow?
     private let viewModel = PriceViewModel()
-    private var statusUpdateTask: Task<Void, Never>?
+    private var menuBarUpdateTask: Task<Void, Never>?
 
     private override init() {
         super.init()
@@ -36,20 +36,38 @@ final class MenuBarController: NSObject {
         }
 
         viewModel.start()
+        startMenuBarUpdateLoop()
+    }
 
-        statusUpdateTask = Task {
+    func deactivate() {
+        menuBarUpdateTask?.cancel()
+        settingsWindow?.close()
+        settingsWindow = nil
+        viewModel.stop()
+    }
+
+    private func startMenuBarUpdateLoop() {
+        menuBarUpdateTask?.cancel()
+        menuBarUpdateTask = Task {
             while !Task.isCancelled {
-                try? await Task.sleep(for: .seconds(5))
+                let tick = menuBarTickInterval
+                try? await Task.sleep(for: .seconds(tick))
+                guard !Task.isCancelled else { return }
+
+                if viewModel.menuBarRotationInterval > 0, viewModel.quotes.count > 1 {
+                    viewModel.advanceMenuBarDisplay()
+                }
                 updateStatusItem()
             }
         }
     }
 
-    func deactivate() {
-        statusUpdateTask?.cancel()
-        settingsWindow?.close()
-        settingsWindow = nil
-        viewModel.stop()
+    private var menuBarTickInterval: TimeInterval {
+        let rotation = viewModel.menuBarRotationInterval
+        if rotation > 0 {
+            return rotation
+        }
+        return 5
     }
 
     func showSettingsWindow() {
@@ -116,10 +134,20 @@ final class MenuBarController: NSObject {
 
     private func menuBarAttributedTitle(for button: NSStatusBarButton) -> NSAttributedString {
         let summary = "  \(viewModel.menuBarSummary())"
-        let textColor = menuBarForegroundColor(for: button)
+        let font = NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .medium)
+
+        let textColor: NSColor
+        if let change = viewModel.menuBarDisplayQuote()?.change24h {
+            textColor = change >= 0
+                ? NSColor.systemGreen
+                : NSColor.systemRed
+        } else {
+            textColor = menuBarForegroundColor(for: button)
+        }
+
         let attributes: [NSAttributedString.Key: Any] = [
             .foregroundColor: textColor,
-            .font: NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .medium)
+            .font: font
         ]
         return NSAttributedString(string: summary, attributes: attributes)
     }

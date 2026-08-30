@@ -28,6 +28,10 @@ final class PriceViewModel {
         didSet { persist() }
     }
 
+    var menuBarRotationInterval: TimeInterval {
+        didSet { persist() }
+    }
+
     var launchAtLogin: Bool {
         didSet {
             guard !suppressLaunchAtLoginSideEffects else { return }
@@ -60,7 +64,10 @@ final class PriceViewModel {
         static let refreshInterval = "refreshInterval"
         static let apiKey = "apiKey"
         static let launchAtLogin = "launchAtLogin"
+        static let menuBarRotationInterval = "menuBarRotationInterval"
     }
+
+    private(set) var menuBarDisplayIndex = 0
 
     init() {
         let defaults = UserDefaults.standard
@@ -68,6 +75,7 @@ final class PriceViewModel {
             ?? Coin.defaults.map(\.id)
         vsCurrency = defaults.string(forKey: Keys.vsCurrency) ?? "usd"
         refreshInterval = defaults.object(forKey: Keys.refreshInterval) as? TimeInterval ?? 60
+        menuBarRotationInterval = defaults.object(forKey: Keys.menuBarRotationInterval) as? TimeInterval ?? 5
         apiKey = defaults.string(forKey: Keys.apiKey) ?? ""
         suppressLaunchAtLoginSideEffects = true
         launchAtLogin = defaults.bool(forKey: Keys.launchAtLogin)
@@ -103,13 +111,27 @@ final class PriceViewModel {
         }
     }
 
+    func menuBarDisplayQuote() -> PriceQuote? {
+        guard !quotes.isEmpty else { return nil }
+        if menuBarRotationInterval <= 0 {
+            return quotes.first
+        }
+        let index = menuBarDisplayIndex % quotes.count
+        return quotes[index]
+    }
+
     func menuBarSummary() -> String {
-        guard let first = quotes.first else { return "CryptoBar" }
+        guard let quote = menuBarDisplayQuote() else { return "CryptoBar" }
         return PriceFormatter.compactSummary(
-            symbol: first.coin.displaySymbol,
-            price: first.price,
+            symbol: quote.coin.displaySymbol,
+            price: quote.price,
             currencyCode: vsCurrency
         )
+    }
+
+    func advanceMenuBarDisplay() {
+        guard quotes.count > 1, menuBarRotationInterval > 0 else { return }
+        menuBarDisplayIndex = (menuBarDisplayIndex + 1) % quotes.count
     }
 
     func toggleCoin(_ coin: Coin) {
@@ -180,6 +202,7 @@ final class PriceViewModel {
                 errorMessage = "Could not parse prices from CoinGecko."
             } else {
                 quotes = fetched
+                menuBarDisplayIndex = menuBarDisplayIndex % fetched.count
                 lastFetchDate = Date()
                 backoffSeconds = 0
                 errorMessage = nil
@@ -212,6 +235,7 @@ final class PriceViewModel {
         defaults.set(selectedCoinIDs, forKey: Keys.selectedCoinIDs)
         defaults.set(vsCurrency, forKey: Keys.vsCurrency)
         defaults.set(refreshInterval, forKey: Keys.refreshInterval)
+        defaults.set(menuBarRotationInterval, forKey: Keys.menuBarRotationInterval)
         defaults.set(apiKey, forKey: Keys.apiKey)
     }
 }
