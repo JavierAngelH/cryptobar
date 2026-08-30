@@ -1,14 +1,35 @@
 import AppKit
 import SwiftUI
 
-@MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
     private var popover: NSPopover!
-    private let viewModel = PriceViewModel()
+    private var viewModel: PriceViewModel!
     private var statusUpdateTask: Task<Void, Never>?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        MainActor.assumeIsolated {
+            installMenuBar()
+        }
+    }
+
+    func applicationWillTerminate(_ notification: Notification) {
+        MainActor.assumeIsolated {
+            statusUpdateTask?.cancel()
+            viewModel?.stop()
+        }
+    }
+
+    @objc private func togglePopover(_ sender: AnyObject?) {
+        MainActor.assumeIsolated {
+            togglePopoverOnMainActor(sender)
+        }
+    }
+
+    @MainActor
+    private func installMenuBar() {
+        viewModel = PriceViewModel()
+
         NSApp.setActivationPolicy(.accessory)
 
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
@@ -36,17 +57,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    func applicationWillTerminate(_ notification: Notification) {
-        statusUpdateTask?.cancel()
-        viewModel.stop()
-    }
-
-    nonisolated @objc private func togglePopover(_ sender: AnyObject?) {
-        MainActor.assumeIsolated {
-            togglePopoverOnMainActor(sender)
-        }
-    }
-
+    @MainActor
     private func togglePopoverOnMainActor(_ sender: AnyObject?) {
         guard let button = statusItem.button else { return }
 
@@ -59,6 +70,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    @MainActor
     private func updateStatusItem() {
         guard let button = statusItem.button else { return }
 
