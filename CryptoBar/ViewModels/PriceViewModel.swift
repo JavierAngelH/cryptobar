@@ -30,10 +30,13 @@ final class PriceViewModel {
 
     var launchAtLogin: Bool {
         didSet {
+            guard !suppressLaunchAtLoginSideEffects else { return }
             UserDefaults.standard.set(launchAtLogin, forKey: Keys.launchAtLogin)
             if let error = LaunchAtLoginManager.setEnabled(launchAtLogin) {
                 launchAtLoginError = error
+                suppressLaunchAtLoginSideEffects = true
                 launchAtLogin = LaunchAtLoginManager.isEnabled
+                suppressLaunchAtLoginSideEffects = false
             } else {
                 launchAtLoginError = nil
             }
@@ -49,6 +52,7 @@ final class PriceViewModel {
     private var pollingTask: Task<Void, Never>?
     private var fetchTask: Task<Void, Never>?
     private var backoffSeconds: TimeInterval = 0
+    private var suppressLaunchAtLoginSideEffects = false
 
     private enum Keys {
         static let selectedCoinIDs = "selectedCoinIDs"
@@ -65,14 +69,14 @@ final class PriceViewModel {
         vsCurrency = defaults.string(forKey: Keys.vsCurrency) ?? "usd"
         refreshInterval = defaults.object(forKey: Keys.refreshInterval) as? TimeInterval ?? 60
         apiKey = defaults.string(forKey: Keys.apiKey) ?? ""
+        suppressLaunchAtLoginSideEffects = true
         launchAtLogin = defaults.bool(forKey: Keys.launchAtLogin)
+        suppressLaunchAtLoginSideEffects = false
         launchAtLoginError = nil
     }
 
     func start() {
-        Task {
-            await CoinCatalog.shared.loadIfNeeded(apiKey: apiKey)
-        }
+        CoinCatalog.shared.preloadInBackground(apiKey: apiKey)
         restartPolling()
         if launchAtLogin && !LaunchAtLoginManager.isEnabled {
             _ = LaunchAtLoginManager.setEnabled(true)
@@ -122,7 +126,9 @@ final class PriceViewModel {
     }
 
     func syncLaunchAtLoginState() {
+        suppressLaunchAtLoginSideEffects = true
         launchAtLogin = LaunchAtLoginManager.isEnabled
+        suppressLaunchAtLoginSideEffects = false
     }
 
     private func shouldRefreshNow() -> Bool {

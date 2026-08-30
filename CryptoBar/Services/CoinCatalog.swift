@@ -7,23 +7,42 @@ final class CoinCatalog {
     private let cacheKey = "coinCatalogCache"
     private let cacheDateKey = "coinCatalogCacheDate"
     private let cacheTTL: TimeInterval = 86_400
-    private let service = CoinGeckoService()
 
     private(set) var coins: [Coin] = Coin.defaults
     private(set) var isLoading = false
+    private var loadTask: Task<Void, Never>?
 
-    func loadIfNeeded(apiKey: String?) async {
+    private init() {
+        if let cached = readCache(), !cached.isEmpty {
+            coins = cached
+        }
+    }
+
+    func preloadInBackground(apiKey: String?) {
+        guard coins.count <= Coin.defaults.count else { return }
+        guard loadTask == nil else { return }
+
+        loadTask = Task {
+            await loadCatalog(apiKey: apiKey)
+            loadTask = nil
+        }
+    }
+
+    func ensureLoadedForSearch(apiKey: String?) {
+        guard coins.count <= Coin.defaults.count else { return }
+        preloadInBackground(apiKey: apiKey)
+    }
+
+    private func loadCatalog(apiKey: String?) async {
         if let cached = readCache(), !cached.isEmpty {
             coins = cached
             return
         }
-        await refresh(apiKey: apiKey)
-    }
 
-    func refresh(apiKey: String?) async {
         isLoading = true
         defer { isLoading = false }
 
+        let service = CoinGeckoService()
         do {
             let fetched = try await service.fetchCoinList(apiKey: apiKey)
             coins = fetched

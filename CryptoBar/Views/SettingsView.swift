@@ -50,6 +50,11 @@ struct SettingsView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         TextField("Search to add coins…", text: $searchText)
                             .textFieldStyle(.roundedBorder)
+                            .onChange(of: searchText) { _, newValue in
+                                if newValue.trimmingCharacters(in: .whitespacesAndNewlines).count >= 2 {
+                                    CoinCatalog.shared.ensureLoadedForSearch(apiKey: viewModel.apiKey)
+                                }
+                            }
 
                         Text("Your tracked coins are listed below. Type at least 2 characters to search and add more.")
                             .font(.caption)
@@ -131,8 +136,7 @@ struct SettingsView: View {
         }
         .frame(width: 420, height: 520)
         .cryptoBarPanelStyle()
-        .task {
-            await CoinCatalog.shared.loadIfNeeded(apiKey: viewModel.apiKey)
+        .onAppear {
             viewModel.syncLaunchAtLoginState()
         }
     }

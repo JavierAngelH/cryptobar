@@ -53,6 +53,10 @@ final class MenuBarController: NSObject {
     }
 
     func showSettingsWindow() {
+        if popover.isShown {
+            popover.performClose(nil)
+        }
+
         if let settingsWindow, settingsWindow.isVisible {
             settingsWindow.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
@@ -99,18 +103,33 @@ final class MenuBarController: NSObject {
             button.image = image
         }
 
+        button.contentTintColor = nil
+
         if viewModel.quotes.isEmpty {
             button.title = ""
+            button.attributedTitle = NSAttributedString(string: "")
         } else {
-            button.title = "  \(viewModel.menuBarSummary())"
+            button.title = ""
+            button.attributedTitle = menuBarAttributedTitle(for: button)
         }
+    }
 
-        if let first = viewModel.quotes.first, let change = first.change24h {
-            button.contentTintColor = change >= 0
-                ? NSColor.systemGreen.withAlphaComponent(0.85)
-                : NSColor.systemRed.withAlphaComponent(0.85)
-        } else {
-            button.contentTintColor = nil
+    private func menuBarAttributedTitle(for button: NSStatusBarButton) -> NSAttributedString {
+        let summary = "  \(viewModel.menuBarSummary())"
+        let textColor = menuBarForegroundColor(for: button)
+        let attributes: [NSAttributedString.Key: Any] = [
+            .foregroundColor: textColor,
+            .font: NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .medium)
+        ]
+        return NSAttributedString(string: summary, attributes: attributes)
+    }
+
+    private func menuBarForegroundColor(for button: NSStatusBarButton) -> NSColor {
+        switch button.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) {
+        case .darkAqua:
+            return .white
+        default:
+            return .black
         }
     }
 }
