@@ -8,6 +8,10 @@ struct Coin: Identifiable, Codable, Hashable, Sendable {
     var displaySymbol: String {
         symbol.uppercased()
     }
+
+    var coingeckoURL: URL {
+        URL(string: "https://www.coingecko.com/en/coins/\(id)")!
+    }
 }
 
 extension Coin {

@@ -98,6 +98,54 @@ struct CoinGeckoService: Sendable {
         }
     }
 
+    func fetchMarketChart(
+        coinID: String,
+        vsCurrency: String,
+        days: Int,
+        apiKey: String?
+    ) async throws -> [PriceChartPoint] {
+        var components = URLComponents(string: "\(baseURL)/coins/\(coinID)/market_chart")
+        components?.queryItems = [
+            URLQueryItem(name: "vs_currency", value: vsCurrency.lowercased()),
+            URLQueryItem(name: "days", value: String(days))
+        ]
+
+        guard let url = components?.url else { throw CoinGeckoError.invalidURL }
+
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 20
+        if let apiKey, !apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            request.setValue(apiKey, forHTTPHeaderField: "x-cg-demo-api-key")
+        }
+
+        let (data, response) = try await session.data(for: request)
+        guard let http = response as? HTTPURLResponse else {
+            throw CoinGeckoError.httpError(statusCode: -1)
+        }
+
+        if http.statusCode == 429 {
+            let retryAfter = http.value(forHTTPHeaderField: "Retry-After").flatMap(TimeInterval.init)
+            throw CoinGeckoError.rateLimited(retryAfter: retryAfter)
+        }
+
+        guard (200 ... 299).contains(http.statusCode) else {
+            throw CoinGeckoError.httpError(statusCode: http.statusCode)
+        }
+
+        struct MarketChartResponse: Decodable {
+            let prices: [[Double]]
+        }
+
+        let decoded = try JSONDecoder().decode(MarketChartResponse.self, from: data)
+        return decoded.prices.compactMap { entry in
+            guard entry.count >= 2 else { return nil }
+            return PriceChartPoint(
+                date: Date(timeIntervalSince1970: entry[0] / 1000),
+                price: entry[1]
+            )
+        }
+    }
+
     func fetchCoinList(apiKey: String?) async throws -> [Coin] {
         guard let url = URL(string: "\(baseURL)/coins/list") else {
             throw CoinGeckoError.invalidURL

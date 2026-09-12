@@ -4,6 +4,8 @@ struct PopoverView: View {
     @Bindable var viewModel: PriceViewModel
     var onOpenSettings: () -> Void
 
+    @State private var expandedCoinID: String?
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             header
@@ -73,8 +75,18 @@ struct PopoverView: View {
             ScrollView {
                 LazyVStack(spacing: 0) {
                     ForEach(viewModel.quotes) { quote in
-                        CoinRowView(quote: quote, currencyCode: viewModel.vsCurrency)
-                            .padding(.horizontal, 16)
+                        CoinRowView(
+                            quote: quote,
+                            currencyCode: viewModel.vsCurrency,
+                            apiKey: viewModel.apiKey,
+                            isExpanded: expandedCoinID == quote.id,
+                            onTap: {
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    expandedCoinID = expandedCoinID == quote.id ? nil : quote.id
+                                }
+                            }
+                        )
+                        .padding(.horizontal, 16)
                         if quote.id != viewModel.quotes.last?.id {
                             Divider()
                                 .padding(.leading, 16)
@@ -83,7 +95,7 @@ struct PopoverView: View {
                 }
                 .padding(.vertical, 8)
             }
-            .frame(maxHeight: 280)
+            .frame(maxHeight: 420)
         }
     }
 

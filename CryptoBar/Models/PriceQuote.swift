@@ -41,4 +41,15 @@ enum PriceFormatter {
         let priceText = formatter.string(from: NSNumber(value: price)) ?? "\(Int(price))"
         return "\(symbol.uppercased()) \(priceText)"
     }
+
+    static func compactAxis(_ value: Double, currencyCode: String) -> String {
+        let code = currencyCode.uppercased()
+        if value >= 1_000_000 {
+            return String(format: "%.1fM %@", value / 1_000_000, code)
+        }
+        if value >= 1_000 {
+            return String(format: "%.1fK %@", value / 1_000, code)
+        }
+        return format(value, currencyCode: currencyCode)
+    }
 }
