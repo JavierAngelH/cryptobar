@@ -1,6 +1,6 @@
 # CryptoBar
 
-A lightweight macOS menu bar app that shows live cryptocurrency prices from [CoinGecko](https://www.coingecko.com/). Click the icon to open a panel with your favorites, 24h change, and settings.
+A lightweight macOS menu bar app that shows live cryptocurrency prices from [CoinGecko](https://www.coingecko.com/), plus Binance P2P USDT/USD buy and sell quotes for Zinli and Banesco Panama. Click the icon to open a panel with your favorites, 24h change, charts, and the P2P section.
 
 ![macOS 15+](https://img.shields.io/badge/macOS-15%2B-blue)
 ![Swift 6](https://img.shields.io/badge/Swift-6-orange)
@@ -11,6 +11,8 @@ A lightweight macOS menu bar app that shows live cryptocurrency prices from [Coi
 - Tracks Bitcoin, Ethereum, and Solana by default — add or remove any coin
 - Auto-refreshes every 60 seconds (configurable: 30s / 60s / 2min)
 - Shows 24h price change with green/red coloring
+- **P2P USDT/USD** best buy and sell for **Zinli** and **Banesco Panama** from Binance P2P (no API key)
+- Menu bar rotates through coins, then Zinli and Banesco as `buy/sell` (for example `Zinli 1.020/1.017`)
 - **Launch at Login** toggle in Settings
 - Free CoinGecko API — no key required; optional Demo key for higher rate limits
 
@@ -57,6 +59,15 @@ open /Applications/CryptoBar.app
 
 Enable **Launch at Login** in Settings and it will start when you reboot.
 
+### Update an installed copy
+
+```bash
+git pull
+./scripts/build-release.sh
+./scripts/install-local.sh
+open /Applications/CryptoBar.app
+```
+
 ### Without the install script
 
 In Xcode: **Product → Build** (⌘B), then **Product → Show Build Folder in Finder**, find `Release/CryptoBar.app`, and drag it to **Applications**.
@@ -83,16 +94,18 @@ Toggle **Open CryptoBar when you log in** in Settings. This uses Apple's `SMAppS
 CryptoBar/
 ├── CryptoBarApp.swift       App entry point
 ├── AppDelegate.swift        Menu bar + popover shell
-├── Models/                  Coin and PriceQuote types
-├── Services/                CoinGecko API, catalog cache, launch-at-login
+├── Models/                  Coin, PriceQuote, and P2P quote types
+├── Services/                CoinGecko API, Binance P2P, catalog cache, launch-at-login
 ├── ViewModels/              PriceViewModel (polling + persistence)
-└── Views/                   Popover, settings, coin rows
+└── Views/                   Popover, settings, coin rows, P2P section
 project.yml                  XcodeGen project spec
 ```
 
 ## Data source
 
-Prices come from the CoinGecko `/simple/price` endpoint. One batched request fetches all selected coins. See [CoinGecko API docs](https://docs.coingecko.com/reference/simple-price).
+Coin prices come from the CoinGecko `/simple/price` endpoint. One batched request fetches all selected coins. See [CoinGecko API docs](https://docs.coingecko.com/reference/simple-price).
+
+P2P prices come from Binance's public C2C search (`POST /bapi/c2c/v2/friendly/c2c/adv/search`) for asset `USDT` and fiat `USD`. No API key. Zinli uses pay type `Zinli`. Banesco Panama uses pay type `BanescoPanama` (not `Banesco`, which is a different book and often mixes other payment methods). The panel shows the best buy (lowest ask) and best sell (highest bid). A dash means that side has no ads. P2P refreshes on its own timer, at least every 60 seconds, using the same interval as coins when that interval is longer.
 
 ## License
 

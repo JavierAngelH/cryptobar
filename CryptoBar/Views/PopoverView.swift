@@ -14,7 +14,7 @@ struct PopoverView: View {
             Divider()
             footer
         }
-        .frame(width: 320)
+        .frame(width: 340)
         .cryptoBarPanelStyle()
     }
 
@@ -37,8 +37,28 @@ struct PopoverView: View {
         .padding(.vertical, 12)
     }
 
-    @ViewBuilder
     private var content: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 0) {
+                coinSection
+                Divider()
+                    .padding(.top, 4)
+                P2PSectionView(
+                    quotes: viewModel.p2pQuotes,
+                    isLoading: viewModel.p2pIsLoading,
+                    errorMessage: viewModel.p2pErrorMessage,
+                    lastFetchDate: viewModel.p2pLastFetchDate,
+                    onRetry: { viewModel.fetchP2P() }
+                )
+                .padding(.horizontal, 16)
+            }
+            .padding(.vertical, 8)
+        }
+        .frame(maxHeight: 520)
+    }
+
+    @ViewBuilder
+    private var coinSection: some View {
         if viewModel.isLoading && viewModel.quotes.isEmpty {
             VStack(spacing: 0) {
                 ForEach(0 ..< 3, id: \.self) { _ in
@@ -46,7 +66,6 @@ struct PopoverView: View {
                         .padding(.horizontal, 16)
                 }
             }
-            .padding(.vertical, 8)
         } else if let error = viewModel.errorMessage, viewModel.quotes.isEmpty {
             VStack(spacing: 12) {
                 Text(error)
@@ -72,30 +91,26 @@ struct PopoverView: View {
             .frame(maxWidth: .infinity)
             .padding(24)
         } else {
-            ScrollView {
-                LazyVStack(spacing: 0) {
-                    ForEach(viewModel.quotes) { quote in
-                        CoinRowView(
-                            quote: quote,
-                            currencyCode: viewModel.vsCurrency,
-                            apiKey: viewModel.apiKey,
-                            isExpanded: expandedCoinID == quote.id,
-                            onTap: {
-                                withAnimation(.easeInOut(duration: 0.2)) {
-                                    expandedCoinID = expandedCoinID == quote.id ? nil : quote.id
-                                }
+            LazyVStack(spacing: 0) {
+                ForEach(viewModel.quotes) { quote in
+                    CoinRowView(
+                        quote: quote,
+                        currencyCode: viewModel.vsCurrency,
+                        apiKey: viewModel.apiKey,
+                        isExpanded: expandedCoinID == quote.id,
+                        onTap: {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                expandedCoinID = expandedCoinID == quote.id ? nil : quote.id
                             }
-                        )
-                        .padding(.horizontal, 16)
-                        if quote.id != viewModel.quotes.last?.id {
-                            Divider()
-                                .padding(.leading, 16)
                         }
+                    )
+                    .padding(.horizontal, 16)
+                    if quote.id != viewModel.quotes.last?.id {
+                        Divider()
+                            .padding(.leading, 16)
                     }
                 }
-                .padding(.vertical, 8)
             }
-            .frame(maxHeight: 420)
         }
     }
 
