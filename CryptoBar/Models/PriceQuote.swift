@@ -52,4 +52,24 @@ enum PriceFormatter {
         }
         return format(value, currencyCode: currencyCode)
     }
+
+    /// USDT/USD P2P quotes sit near 1.000, so keep three decimal places.
+    static func formatP2P(_ value: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = "USD"
+        formatter.minimumFractionDigits = 3
+        formatter.maximumFractionDigits = 3
+        return formatter.string(from: NSNumber(value: value)) ?? String(format: "%.3f", value)
+    }
+
+    static func formatP2PPlain(_ value: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.numberStyle = .decimal
+        formatter.minimumFractionDigits = 3
+        formatter.maximumFractionDigits = 3
+        formatter.usesGroupingSeparator = false
+        return formatter.string(from: NSNumber(value: value)) ?? String(format: "%.3f", value)
+    }
 }

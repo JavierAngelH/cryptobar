@@ -22,13 +22,14 @@ final class MenuBarController: NSObject {
         updateStatusItem()
 
         popover = NSPopover()
-        popover.contentSize = NSSize(width: 320, height: 480)
         popover.behavior = .transient
-        popover.contentViewController = NSHostingController(
+        let hostingController = NSHostingController(
             rootView: PopoverView(viewModel: viewModel, onOpenSettings: { [weak self] in
                 self?.showSettingsWindow()
             })
         )
+        hostingController.sizingOptions = .preferredContentSize
+        popover.contentViewController = hostingController
 
         if let button = statusItem.button {
             button.target = self
@@ -54,7 +55,7 @@ final class MenuBarController: NSObject {
                 try? await Task.sleep(for: .seconds(tick))
                 guard !Task.isCancelled else { return }
 
-                if viewModel.menuBarRotationInterval > 0, viewModel.quotes.count > 1 {
+                if viewModel.menuBarRotationInterval > 0, viewModel.menuBarSlotCount() > 1 {
                     viewModel.advanceMenuBarDisplay()
                 }
                 updateStatusItem()
@@ -123,7 +124,7 @@ final class MenuBarController: NSObject {
 
         button.contentTintColor = nil
 
-        if viewModel.quotes.isEmpty {
+        if viewModel.menuBarSlotCount() == 0 {
             button.title = ""
             button.attributedTitle = NSAttributedString(string: "")
         } else {
@@ -137,7 +138,7 @@ final class MenuBarController: NSObject {
         let font = NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .medium)
 
         let textColor: NSColor
-        if let change = viewModel.menuBarDisplayQuote()?.change24h {
+        if let change = viewModel.menuBarPriceChange() {
             textColor = change >= 0
                 ? NSColor.systemGreen
                 : NSColor.systemRed
